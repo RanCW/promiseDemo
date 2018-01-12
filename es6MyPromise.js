@@ -6,8 +6,8 @@ class MyPromise {
         this.status = 'pending';//状态——pending-等待，fulfilled-成功，rejected-失败
         this.onRejectedCallback = [];//失败回调集合
         this.onFulfilledCallback = [];//成功回调集合
-        this.value = undefined;
-        this.reason = undefined;
+        this.value = undefined;//成功返回值
+        this.reason = undefined;//失败返回值
         try {
             callback(this.resolve.bind(this), this.reject.bind(this))
         } catch (err) {
@@ -15,14 +15,14 @@ class MyPromise {
         }
     }
     resolve(res) {
-        if (res instanceof Promise) {
-            return res.then(resolve, reject);
+        if (res instanceof MyPromise) {
+            return res.then(res.resolve.bind(this),res.reject.bind(this));
         }
         if (this.status === 'pending') {
             this.status = 'fulfilled';
             this.value = res;
             this.onFulfilledCallback.forEach((item) => {
-                item(this.value);
+                item(self.value);
             })
         }
     }
@@ -43,16 +43,23 @@ class MyPromise {
         if (returnPromise === x) {
             return reject(new TypeError('循环引用'));
         }
-        if (x instanceof MyPromise) {
-            if (x.status == 'pending') {
-                x.then(function (y) {
-                    this.resolvePromise(returnPromise, y, resolve, reject);
-                }, reject);
-            } else if (x.status == 'fulfilled') {
-                resolve(x.value);
-            } else if (x.status == 'rejected') {
-                reject(x.reason);
+        if (x instanceof MyPromise||x instanceof Promise) {
+            if(x instanceof Promise){
+                x.then(function (val) {
+                    resolve(val)
+                })
+            }else{
+                if (x.status == 'pending') {
+                    x.then(function (y) {
+                        this.resolvePromise(returnPromise, y, resolve, reject);
+                    }, reject);
+                } else if (x.status == 'fulfilled') {
+                    resolve(x.value);
+                } else if (x.status == 'rejected') {
+                    reject(x.reason);
+                }
             }
+
         } else if (x != null && (typeof x == 'object' || typeof x == 'function')) {
             try {
                 then = x.then;
@@ -63,8 +70,7 @@ class MyPromise {
                 }
             } catch (e) {
                 reject(e);
-            }
-            ;
+            };
         } else {
             resolve(x);
         }
@@ -82,7 +88,7 @@ class MyPromise {
         let returnPromise;//返回的新promise
         let self = this;
         if (this.status == 'pending') {//等待状态
-            returnPromise = new Promise(function (returnResolve, returnReject) {
+            returnPromise = new MyPromise(function (returnResolve, returnReject) {
                 self.onFulfilledCallback.push(function () {
                     let x = resolve(self.value);
                     self.resolvePromise(returnPromise, x, returnResolve, returnReject);
@@ -94,13 +100,13 @@ class MyPromise {
             });
         }
         if (this.status == 'fulfilled') {//成功
-            returnPromise = new Promise(function (returnResolve, returnReject) {
+            returnPromise = new MyPromise(function (returnResolve, returnReject) {
                 let x = resolve(self.value);
                 self.resolvePromise(returnPromise, x, returnResolve, returnReject);
             });
         }
         if (this.status == 'rejected') {//失败
-            returnPromise = new Promise(function (returnResolve, returnReject) {
+            returnPromise = new MyPromise(function (returnResolve, returnReject) {
                 let x = reject(self.reason);
                 self.resolvePromise(returnPromise, x, returnResolve, returnReject);
             });
@@ -148,27 +154,41 @@ class MyPromise {
 
 let test1 = new MyPromise(function (resolve, reject) {
     setTimeout(function () {
-        reject(1000)
-    }, 400)
+            resolve('1000')
+    }, 2000)
 });
-
-let test2 = new MyPromise(function (resolve, reject) {
-    setTimeout(function () {
-        resolve(2000)
-    }, 100)
-});
-
-let all = MyPromise.race([test1, test2])
-
-all.then(res => {
+test1.then(res=>{
     console.log(res)
-}, err => {
-    console.log(err + 'err');
-})
-
-test1.then(res => {
-    console.log(res);
-    return res + 1000
-}).catch(function (err) {
+    return new MyPromise(function (resolve, reject) {
+        resolve(new MyPromise(function (resolve, reject) {
+                resolve('第一次返回')
+        }))
+    })
+},function (err) {
     console.log(err)
+}).then(res=>{
+    console.log(res);
+    return '第二次返回'
+}).then(res=>{
+    console.log(res);
 })
+// let test2 = new MyPromise(function (resolve, reject) {
+//     setTimeout(function () {
+//         resolve(2000)
+//     }, 100)
+// });
+//
+// let all = MyPromise.race([test1, test2])
+//
+// all.then(res => {
+//     console.log(res)
+// }, err => {
+//     console.log(err + 'err');
+// })
+//
+// test1.then(res => {
+//     console.log(res);
+//     return res + 1000
+// }).catch(function (err) {
+//     console.log(err)
+// })
