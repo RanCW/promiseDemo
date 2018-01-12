@@ -46,7 +46,7 @@ class MyPromise{
     if(returnPromise === x){
       return reject(new TypeError('循环引用'));
     }
-    if(x instanceof Promise){
+    if(x instanceof MyPromise){
       if(x.status == 'pending'){
         x.then(function(y){
           this.resolvePromise(returnPromise,y,resolve,reject);
