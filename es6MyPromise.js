@@ -22,7 +22,7 @@ class MyPromise {
             this.status = 'fulfilled';
             this.value = res;
             this.onFulfilledCallback.forEach((item) => {
-                item(self.value);
+                item(this.value);
             })
         }
     }
