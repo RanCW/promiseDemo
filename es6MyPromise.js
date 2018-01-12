@@ -40,16 +40,16 @@ class MyPromise{
       })
     }
   }
-  resolvePromise(promise2,x,resolve,reject){
+  resolvePromise(returnPromise,x,resolve,reject){
     let then;
     //如果x就是promise2
-    if(promise2 === x){
+    if(returnPromise === x){
       return reject(new TypeError('循环引用'));
     }
     if(x instanceof Promise){
       if(x.status == 'pending'){
         x.then(function(y){
-          this.resolvePromise(promise2,y,resolve,reject);
+          this.resolvePromise(returnPromise,y,resolve,reject);
         },reject);
       }else if(x.status == 'fulfilled'){
         resolve(x.value);
@@ -61,7 +61,7 @@ class MyPromise{
         then = x.then;
         if(typeof then == 'function'){
           then.call(x,function(y){
-            this.resolvePromise(promise2,y,resolve,reject)
+            this.resolvePromise(returnPromise,y,resolve,reject)
           },reject);
         }
       }catch(e){
@@ -107,7 +107,7 @@ class MyPromise{
     return returnPromise;
   }
   catch(catchFunc){
-    this.then(null,catchFunc);
+    return this.then(null,catchFunc);
   }
   static all(arr){
     return new MyPromise((resolve,reject)=>{
@@ -160,4 +160,11 @@ all.then(res=>{
   console.log(res)
 },err=>{
   console.log(err+'err');
+})
+
+test1.then(res=>{
+  console.log(res);
+  return res+1000
+}).catch(function (err) {
+  console.log(err)
 })
