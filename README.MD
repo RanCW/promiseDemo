@@ -1,6 +1,8 @@
 ### 代码说明
  * es6MyPromise.js 为完整Promise原理分析代码
  * 其它文件均为个人写的测试代码
+ 
+   欢迎大家多多交流、多多star，哈哈.......
 
 
 ## ES6新特性Promise详解
@@ -320,6 +322,11 @@ this is loser
 ```javascript 
     因为该方法不需要实例化就能使用，于是在我们原本的 MyPromise类上面添加这样一个静态方法
 static all(arr) {
+         if(!(arr instanceof Array&&arr.constructor == Array)){//判断是否是数组
+                     return new MyPromise((resolve,reject)=>{
+                         reject('参数类型只能是数组')
+                     })
+                 }
         return new MyPromise((resolve, reject) => {
             let result = [];
             let resolveIndex = 0;
@@ -367,6 +374,11 @@ this is winner
 因为该race方法不需要实例化就能使用，于是同样在我们的MyPromise上面添加一个static方法，原理解析代码片段如下：
 ```javascript
     static race(arr) {
+    if(!(arr instanceof Array&&arr.constructor == Array)){//判断是否是数组
+                return new MyPromise((resolve,reject)=>{
+                    reject('参数类型只能是数组')
+                })
+            }
         return new MyPromise((resolve, reject) => {
             arr.forEach((item, index) => {
                 item.then(res => {
