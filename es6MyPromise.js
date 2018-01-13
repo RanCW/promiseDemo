@@ -119,6 +119,11 @@ class MyPromise {
     }
 
     static all(arr) {
+        if(!(arr instanceof Array&&arr.constructor == Array)){//判断是否是数组
+            return new MyPromise((resolve,reject)=>{
+                reject('参数类型只能是数组')
+            })
+        }
         return new MyPromise((resolve, reject) => {
             let result = [];
             let resolveIndex = 0;
@@ -140,6 +145,11 @@ class MyPromise {
     }
 
     static race(arr) {
+        if(!(arr instanceof Array&&arr.constructor == Array)){//判断是否是数组
+            return new MyPromise((resolve,reject)=>{
+                reject('参数类型只能是数组')
+            })
+        }
         return new MyPromise((resolve, reject) => {
             arr.forEach((item, index) => {
                 item.then(res => {
@@ -157,34 +167,34 @@ let test1 = new MyPromise(function (resolve, reject) {
             resolve('1000')
     }, 2000)
 });
-test1.then(res=>{
-    console.log(res)
-    return new MyPromise(function (resolve, reject) {
-        resolve(new MyPromise(function (resolve, reject) {
-                resolve('第一次返回')
-        }))
-    })
-},function (err) {
-    console.log(err)
-}).then(res=>{
-    console.log(res);
-    return '第二次返回'
-}).then(res=>{
-    console.log(res);
-})
-// let test2 = new MyPromise(function (resolve, reject) {
-//     setTimeout(function () {
-//         resolve(2000)
-//     }, 100)
-// });
-//
-// let all = MyPromise.race([test1, test2])
-//
-// all.then(res => {
+// test1.then(res=>{
 //     console.log(res)
-// }, err => {
-//     console.log(err + 'err');
+//     return new MyPromise(function (resolve, reject) {
+//         resolve(new MyPromise(function (resolve, reject) {
+//                 resolve('第一次返回')
+//         }))
+//     })
+// },function (err) {
+//     console.log(err)
+// }).then(res=>{
+//     console.log(res);
+//     return '第二次返回'
+// }).then(res=>{
+//     console.log(res);
 // })
+let test2 = new MyPromise(function (resolve, reject) {
+    setTimeout(function () {
+        resolve(2000)
+    }, 100)
+});
+//
+let all = MyPromise.race(test1)
+//
+all.then(res => {
+    console.log(res)
+}, err => {
+    console.log(err + 'err');
+})
 //
 // test1.then(res => {
 //     console.log(res);

@@ -37,10 +37,14 @@
 //promise.then(onFulfilled, onRejected)
 //resolve(成功)时，onFulfilled 会被调用
 //reject(失败)时，onRejected 会被调用
-let P1=new Promise((resolve,reject)=>{
-  setTimeout(function () {
-    resolve(200)
-  },2000)
-}).then(res=>{
-  console.log(res)
-})
+// let P1=new Promise((resolve,reject)=>{
+//   setTimeout(function () {
+//     resolve(200)
+//   },2000)
+// }).then(res=>{
+//   console.log(res)
+// })
+
+let arr=12456
+
+console.log(Object.prototype.toString.call(arr) === '[object Array]');
